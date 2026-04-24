@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ambulâncias / Apoio — SGO3</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#c9d1d9;min-height:100vh}
+.hero{background:linear-gradient(135deg,#0d1117,#161b27);padding:18px 24px;text-align:center;border-bottom:2px solid #00b894}
+.hero h1{font-size:1.3rem;font-weight:800;color:#e6edf3;margin-bottom:3px}
+.hero .sub{color:#8b949e;font-size:.8rem}
+#ts-linha{color:#6c9bcf;font-size:.76rem;margin-top:4px}
+.btn-row{margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.btn-action{border-radius:7px;padding:6px 16px;font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid #30363d;text-decoration:none;display:inline-block}
+.btn-reload{background:#1c2333;color:#c9d1d9}
+.btn-reload:hover{background:#21262d}
+
+
+ 
+.kpis{display:flex;gap:6px;flex-wrap:wrap;margin:14px 14px 10px}
+.kpi{flex:1;min-width:110px;border-radius:8px;background:#161b27;border:1px solid #21262d;overflow:hidden;transition:transform .15s}
+.kpi:hover{transform:translateY(-2px)}
+.kpi-accent{height:3px}
+.kpi-body{padding:8px 10px 10px}
+.kpi .lbl{font-size:.59rem;font-weight:700;opacity:.9;letter-spacing:.03em;margin-bottom:2px}
+.kpi .val{font-size:1.4rem;font-weight:800;line-height:1.1}
+.kpi .sub{font-size:.57rem;color:#8b949e;margin-top:2px}
+
+ 
+.filters{margin:0 14px 12px;background:#161b27;border:1px solid #21262d;border-radius:10px;padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.flt-grp{display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px}
+.flt-grp label{font-size:.68rem;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.03em}
+.flt-grp input,.flt-grp select{background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;padding:7px 10px;font-size:.82rem;outline:none;width:100%}
+.flt-grp input:focus,.flt-grp select:focus{border-color:#58a6ff}
+.flt-grp select option{background:#161b27}
+.btn-clear{background:#21262d;border:1px solid #30363d;border-radius:6px;color:#8b949e;padding:7px 14px;font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;align-self:flex-end}
+.btn-clear:hover{background:#30363d;color:#c9d1d9}
+
+ 
+.container{padding:0 14px 48px}
+.card{background:#161b27;border:1px solid #21262d;border-radius:10px;overflow:hidden}
+.card-hdr{padding:10px 16px;font-weight:700;font-size:.84rem;color:#e6edf3;background:#1a2235;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center}
+.card-hdr .hint{font-size:.72rem;font-weight:400;color:#8b949e}
+.tbl-wrap{overflow-x:auto;max-height:68vh;overflow-y:auto}
+table{width:100%;min-width:1100px;border-collapse:collapse;font-size:.82rem}
+thead th{background:#1c2333;color:#8b949e;padding:8px 11px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:10;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #30363d;cursor:pointer;user-select:none}
+thead th:hover{background:#21262d;color:#c9d1d9}
+thead th.sort-asc{color:#58a6ff}thead th.sort-desc{color:#f0883e}
+tbody td{padding:8px 11px;border-bottom:1px solid #21262d;color:#c9d1d9;vertical-align:middle}
+tbody tr:hover{background:#1c2333}
+.badge-ciclo{border-radius:11px;padding:2px 9px;font-size:.68rem;font-weight:800;white-space:nowrap}
+.badge-am{background:#2d1f0a;color:#f0883e;border:1px solid #f0883e}
+.badge-pm{background:#0d1e35;color:#58a6ff;border:1px solid #58a6ff}
+.badge-sd{background:#1a1233;color:#bc8cff;border:1px solid #bc8cff}
+.badge-xpt{background:#0d2020;color:#56d364;border:1px solid #56d364}
+.badge-outro{background:#21262d;color:#8b949e;border:1px solid #30363d}
+.link-auth{color:#58a6ff;text-decoration:none;font-size:.78rem;font-weight:700;white-space:nowrap}
+.link-auth:hover{text-decoration:underline}
+.no-link{color:#484f58;font-size:.75rem;font-style:italic}
+.txt-rota{font-family:monospace;color:#58a6ff;font-weight:700;font-size:.8rem}
+.vazio{text-align:center;padding:30px;color:#3fb950;font-weight:600}
+.alerta-err{background:#2a1215;color:#f47067;padding:10px 14px;border:1px solid #3d1a1a;border-radius:7px;margin:8px 14px;font-weight:600}
+footer{text-align:center;color:#484f58;font-size:.71rem;padding:14px;border-top:1px solid #21262d;margin-top:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🚑 Formalização de Ambulâncias / Apoio &mdash; SGO3</h1>
+  <div class="sub">Registro de rotas abertas com justificativa via formulário</div>
+  <div id="ts-linha">Carregando...</div>
+  <div class="btn-row">
+    <button class="btn-action btn-reload" onclick="location.reload()">&#128260; Recarregar</button>
+  </div>
+</div>
+
+<div id="kpi-row" class="kpis"></div>
+
+<div class="filters">
+  <div class="flt-grp">
+    <label>Busca geral</label>
+    <input type="text" id="f-busca" placeholder="Nome, motorista, detalhes..." oninput="aplicarFiltros()">
+  </div>
+  <div class="flt-grp">
+    <label>Rota Original</label>
+    <input type="text" id="f-rota-orig" placeholder="Número da rota..." oninput="aplicarFiltros()">
+  </div>
+  <div class="flt-grp">
+    <label>Rota Ambulância</label>
+    <input type="text" id="f-rota-amb" placeholder="Número da rota..." oninput="aplicarFiltros()">
+  </div>
+  <div class="flt-grp">
+    <label>Transportadora</label>
+    <select id="f-transp" onchange="aplicarFiltros()">
+      <option value="">Todas</option>
+    </select>
+  </div>
+  <div class="flt-grp">
+    <label>Ciclo</label>
+    <select id="f-ciclo" onchange="aplicarFiltros()">
+      <option value="">Todos</option>
+    </select>
+  </div>
+  <div class="flt-grp">
+    <label>SVC</label>
+    <select id="f-svc" onchange="aplicarFiltros()">
+      <option value="">Todos</option>
+    </select>
+  </div>
+  <button class="btn-clear" onclick="limparFiltros()">✕ Limpar</button>
+</div>
+
+<div id="erro-global"></div>
+
+<div class="container">
+  <div class="card">
+    <div class="card-hdr">
+      <span>Registros <span id="count-label" style="color:#8b949e;font-weight:400;font-size:.78rem"></span></span>
+      <span class="hint">Clique no cabeçalho para ordenar</span>
+    </div>
+    <div class="tbl-wrap">
+      <table id="tabela-amb">
+        <thead><tr>
+          <th onclick="sortCol(0,this)">DATA/HORA</th>
+          <th onclick="sortCol(1,this)">NOME</th>
+          <th onclick="sortCol(2,this)">SVC</th>
+          <th onclick="sortCol(3,this)">CICLO</th>
+          <th onclick="sortCol(4,this)">DATA ROTA</th>
+          <th onclick="sortCol(5,this)">ROTA ORIGINAL</th>
+          <th onclick="sortCol(6,this)">ROTA AMBULÂNCIA</th>
+          <th onclick="sortCol(7,this)">AUTORIZADO POR</th>
+          <th onclick="sortCol(8,this)">TRANSPORTADORA</th>
+          <th onclick="sortCol(9,this)">MOTIVO</th>
+          <th onclick="sortCol(10,this)">DETALHES</th>
+          <th>AUTORIZAÇÃO</th>
+        </tr></thead>
+        <tbody id="tbody-amb">
+          <tr><td colspan="12" style="text-align:center;padding:28px;color:#8b949e;font-style:italic">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer id="rodape">Dashboard Ambulâncias · SGO3 · Mercado Livre Logística</footer>
+
+<script>
+
+const DADOS_RAW = {"rows":[{"ts":"24/04/2026 21:07","email":"teste","nome":"reere","svc":"SGO1","ciclo":"AM","data_rota":"23/04/2026","rota_original":"rere","rota_ambulancia":"rere","autorizado_por":"Antonio","transportadora":"Coopmetro","motivo":"Atraso na Roterização","detalhes":"rerere","link":"https://drive.google.com/open?id=1iJCDcU_QpEKNlMgQNce1Qfh5WmEalCUN"}],"ts":"24/04/2026 19:05:53","erro":null};
+const GERADO_EM = '24/04/2026 19:05';
+
+var _allRows    = [];
+var _sortState  = { col: -1, dir: 1 };
+
+
+function cicloBadge(c) {
+  var u = (c || '').toUpperCase().trim();
+  var cls = u === 'AM' ? 'badge-am' : u === 'PM' ? 'badge-pm' :
+            u === 'SD' ? 'badge-sd' : u === 'XPT' ? 'badge-xpt' : 'badge-outro';
+  return "<span class='badge-ciclo " + cls + "'>" + (c || '-') + "</span>";
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+
+function popularSelect(id, campo) {
+  var vals = [];
+  _allRows.forEach(function(r) {
+    var v = r[campo] || '';
+    if (v && vals.indexOf(v) < 0) vals.push(v);
+  });
+  vals.sort();
+  var el = document.getElementById(id);
+  var prev = el.value;
+  while (el.options.length > 1) el.remove(1);
+  vals.forEach(function(v) {
+    var o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    el.appendChild(o);
+  });
+  if (prev) el.value = prev;
+}
+
+
+function kpi(lbl, val, cor, accent, sub) {
+  return "<div class='kpi'><div class='kpi-accent' style='background:" + accent + "'></div>"
+    + "<div class='kpi-body'><div class='lbl' style='color:" + cor + "'>" + lbl + "</div>"
+    + "<div class='val' style='color:" + cor + "'>" + val + "</div>"
+    + (sub ? "<div class='sub'>" + sub + "</div>" : '') + "</div></div>";
+}
+
+function renderKpis(rows) {
+  var total = rows.length;
+  var am = rows.filter(function(r){return (r.ciclo||'').toUpperCase()==='AM';}).length;
+  var pm = rows.filter(function(r){return (r.ciclo||'').toUpperCase()==='PM';}).length;
+  var sd = rows.filter(function(r){return (r.ciclo||'').toUpperCase()==='SD';}).length;
+  var xpt= rows.filter(function(r){return (r.ciclo||'').toUpperCase()==='XPT';}).length;
+
+  
+  var transp = {};
+  rows.forEach(function(r){ if(r.transportadora) transp[r.transportadora] = (transp[r.transportadora]||0)+1; });
+  var topTransp = Object.keys(transp).sort(function(a,b){return transp[b]-transp[a];})[0] || '-';
+
+  document.getElementById('kpi-row').innerHTML =
+    kpi('TOTAL REGISTROS', total,   '#e6edf3','#58a6ff','ambulâncias formalizadas')
+  + kpi('AM',  am,  '#f0883e','#f0883e','ciclo AM')
+  + kpi('PM',  pm,  '#58a6ff','#58a6ff','ciclo PM')
+  + kpi('SD',  sd,  '#bc8cff','#bc8cff','ciclo SD')
+  + (xpt > 0 ? kpi('XPT', xpt, '#56d364','#56d364','ciclo XPT') : '')
+  + kpi('TRANSPORTADORA TOP', topTransp, '#3fb950','#00b894', transp[topTransp] ? transp[topTransp] + ' registros' : '');
+}
+
+
+function renderTabela(rows) {
+  var tbody = document.getElementById('tbody-amb');
+  document.getElementById('count-label').textContent =
+    '— ' + rows.length + ' de ' + _allRows.length;
+
+  if (!rows.length) {
+    tbody.innerHTML = "<tr><td colspan='12' class='vazio'>Nenhum registro encontrado</td></tr>";
+    return;
+  }
+
+  tbody.innerHTML = rows.map(function(r) {
+    var linkHtml = r.link
+      ? "<a class='link-auth' href='" + esc(r.link) + "' target='_blank'>&#128247; Ver print</a>"
+      : "<span class='no-link'>sem anexo</span>";
+
+    return "<tr>"
+      + "<td style='white-space:nowrap;font-size:.76rem;color:#8b949e'>" + esc(r.ts) + "</td>"
+      + "<td>" + esc(r.nome) + "</td>"
+      + "<td style='text-align:center'><span style='font-size:.75rem;font-weight:700;color:#e6edf3'>" + esc(r.svc) + "</span></td>"
+      + "<td style='text-align:center'>" + cicloBadge(r.ciclo) + "</td>"
+      + "<td style='white-space:nowrap;font-size:.78rem'>" + esc(r.data_rota) + "</td>"
+      + "<td class='txt-rota'>" + esc(r.rota_original) + "</td>"
+      + "<td class='txt-rota' style='color:#3fb950'>" + esc(r.rota_ambulancia) + "</td>"
+      + "<td>" + esc(r.autorizado_por) + "</td>"
+      + "<td style='font-weight:600'>" + esc(r.transportadora) + "</td>"
+      + "<td style='font-size:.76rem;color:#e3b341'>" + esc(r.motivo) + "</td>"
+      + "<td style='font-size:.76rem;color:#8b949e;max-width:200px;white-space:normal'>" + esc(r.detalhes) + "</td>"
+      + "<td>" + linkHtml + "</td>"
+      + "</tr>";
+  }).join('');
+}
+
+
+function aplicarFiltros() {
+  var busca     = (document.getElementById('f-busca').value     || '').toLowerCase().trim();
+  var rotaOrig  = (document.getElementById('f-rota-orig').value || '').toLowerCase().trim();
+  var rotaAmb   = (document.getElementById('f-rota-amb').value  || '').toLowerCase().trim();
+  var transp    = document.getElementById('f-transp').value;
+  var ciclo     = document.getElementById('f-ciclo').value;
+  var svc       = document.getElementById('f-svc').value;
+
+  var filtered = _allRows.filter(function(r) {
+    if (busca    && !JSON.stringify(r).toLowerCase().includes(busca))                return false;
+    if (rotaOrig && !(r.rota_original  || '').toLowerCase().includes(rotaOrig))     return false;
+    if (rotaAmb  && !(r.rota_ambulancia|| '').toLowerCase().includes(rotaAmb))      return false;
+    if (transp   && r.transportadora !== transp)                                     return false;
+    if (ciclo    && (r.ciclo||'').toUpperCase() !== ciclo.toUpperCase())             return false;
+    if (svc      && r.svc !== svc)                                                   return false;
+    return true;
+  });
+
+  renderTabela(aplicarSort(filtered));
+}
+
+function limparFiltros() {
+  ['f-busca','f-rota-orig','f-rota-amb'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  ['f-transp','f-ciclo','f-svc'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  aplicarFiltros();
+}
+
+
+var _colKeys = ['ts','nome','svc','ciclo','data_rota','rota_original',
+                'rota_ambulancia','autorizado_por','transportadora','motivo','detalhes','link'];
+
+function aplicarSort(rows) {
+  if (_sortState.col < 0) return rows;
+  var key = _colKeys[_sortState.col];
+  var dir = _sortState.dir;
+  return rows.slice().sort(function(a, b) {
+    var va = String(a[key] || ''), vb = String(b[key] || '');
+    return va.localeCompare(vb, 'pt-BR', {sensitivity:'base'}) * dir;
+  });
+}
+
+function sortCol(idx, th) {
+  if (_sortState.col === idx) _sortState.dir *= -1;
+  else { _sortState.col = idx; _sortState.dir = 1; }
+  document.querySelectorAll('thead th').forEach(function(h) {
+    h.classList.remove('sort-asc','sort-desc');
+  });
+  th.classList.add(_sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
+  aplicarFiltros();
+}
+
+
+window.addEventListener('load', function() {
+  var dados = DADOS_RAW || {};
+
+  if (dados.erro) {
+    document.getElementById('erro-global').innerHTML =
+      "<div class='alerta-err'>⚠️ " + dados.erro + "</div>";
+  }
+
+  _allRows = (dados.rows || []).slice().reverse(); 
+
+  document.getElementById('ts-linha').innerHTML =
+    'Atualizado em: <strong>' + (dados.ts || GERADO_EM) + '</strong>'
+    + ' &nbsp;|&nbsp; Total: <strong>' + _allRows.length + '</strong>';
+
+  document.getElementById('rodape').textContent =
+    'Dashboard Ambulâncias · SGO3 · Mercado Livre Logística · Gerado em: ' + GERADO_EM;
+
+  popularSelect('f-transp', 'transportadora');
+  popularSelect('f-ciclo',  'ciclo');
+  popularSelect('f-svc',    'svc');
+
+  renderKpis(_allRows);
+  renderTabela(aplicarSort(_allRows));
+});
+</script>
+</body>
+</html>
